@@ -21,10 +21,15 @@ const AuthPage = () => {
     const { mutate: socialAuthMutation, isPending: isSocialPending } = useMutation({
         mutationFn: socialLogin,
         onSuccess: (data) => {
+            console.log("Login successful, data:", data);
+            // Set the auth user data in cache
             queryClient.setQueryData(["authUser"], data);
-            queryClient.invalidateQueries({ queryKey: ["authUser"] });
-            navigate("/");
             toast.success("Logged in successfully!");
+
+            // Force navigation using window.location
+            const redirectPath = data.user?.isOnboarded ? "/" : "/onboarding";
+            console.log("Redirecting to:", redirectPath);
+            window.location.href = redirectPath;
         },
         onError: (error) => {
             console.error("Social login failed:", error);
@@ -49,10 +54,15 @@ const AuthPage = () => {
     const { mutate: verifyOtpMutation, isPending: isVerifyingOtp } = useMutation({
         mutationFn: verifyEmailOtp,
         onSuccess: (data) => {
+            console.log("OTP verified, data:", data);
+            // Set the auth user data in cache
             queryClient.setQueryData(["authUser"], data);
-            queryClient.invalidateQueries({ queryKey: ["authUser"] });
-            navigate("/");
             toast.success("Logged in successfully!");
+
+            // Force navigation using window.location
+            const redirectPath = data.user?.isOnboarded ? "/" : "/onboarding";
+            console.log("Redirecting to:", redirectPath);
+            window.location.href = redirectPath;
         },
         onError: (error) => {
             console.error("Verify OTP failed:", error);
