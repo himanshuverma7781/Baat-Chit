@@ -119,9 +119,12 @@ export async function login(req, res) {
 }
 
 export function logout(req, res) {
-  res.clearCookie("jwt")
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
   res.status(200).json({ success: true, message: "User logged out successfully" });
-
 }
 
 export async function onboard(req, res) {
@@ -195,7 +198,11 @@ export const deactivateAccount = async (req, res) => {
     await user.save();
     console.log("User deactivated successfully in DB");
 
-    res.clearCookie("jwt");
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
     res.status(200).json({ message: "Account deactivated successfully" });
   } catch (error) {
     console.error("Error deactivating account:", error);
@@ -230,7 +237,11 @@ export const deleteAccount = async (req, res) => {
       // Don't fail the request if stream deletion fails, but log it
     }
 
-    res.clearCookie("jwt");
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
     res.status(200).json({ message: "Account deleted permanently" });
   } catch (error) {
     console.error("Error deleting account:", error);
