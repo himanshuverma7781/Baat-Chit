@@ -326,6 +326,14 @@ export const sendEmailOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
+    // Check email credentials
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      console.error("EMAIL_USER or EMAIL_PASSWORD not configured");
+      return res.status(500).json({ message: "Email service not configured" });
+    }
+
+    console.log("Generating OTP for:", email);
+
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -339,13 +347,29 @@ export const sendEmailOtp = async (req, res) => {
       expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
     });
 
+    console.log("OTP stored in DB, attempting to send email...");
+
     // Send OTP email
-    await sendOtpEmail(email, otp);
+    try {
+      await sendOtpEmail(email, otp);
+      console.log("Email sent successfully");
+    } catch (emailError) {
+      console.error("Email sending error details:", {
+        message: emailError.message,
+        code: emailError.code,
+        command: emailError.command,
+        response: emailError.response,
+      });
+      throw emailError;
+    }
 
     res.status(200).json({ message: "OTP sent to your email" });
   } catch (error) {
     console.error("Error sending OTP:", error);
-    res.status(500).json({ message: "Failed to send OTP. Please try again." });
+    res.status(500).json({
+      message: "Failed to send OTP. Please try again.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 };
 
